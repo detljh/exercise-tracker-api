@@ -6,7 +6,21 @@ const bodyParser = require('body-parser')
 const cors = require('cors')
 
 const mongoose = require('mongoose')
-mongoose.connect(process.env.MLAB_URI || 'mongodb://localhost/exercise-track' )
+mongoose.connect(process.env.MLAB_URI || 'mongodb://localhost/exercise-track', {useNewUrlParser: true, useUnifiedTopology: true});
+
+let Schema = mongoose.Schema;
+let userSchema = new Schema({
+  username: String
+});
+let exerciseSchema = new Schema({
+  children: [userSchema],
+  description: String,
+  duration: Number,
+  data: Date
+});
+
+let User = mongoose.model('User', userSchema);
+let Exercise = mongoose.model('Exercise', exerciseSchema);
 
 app.use(cors())
 
@@ -22,7 +36,8 @@ app.get('/', (req, res) => {
 
 // Not found middleware
 app.use((req, res, next) => {
-  return next({status: 404, message: 'not found'})
+  console.log(`${req.method} ${req.path} - ${req.ip}`);
+  next();
 })
 
 // Error Handling middleware
@@ -43,6 +58,24 @@ app.use((err, req, res, next) => {
   res.status(errCode).type('txt')
     .send(errMessage)
 })
+
+app.route('/api/exercise/new-user')
+  .post((req, res) => {
+    let name = req.body.username
+    let findUsername = User.findOne({username: name}, (err, user) => {
+      if (user) return res.send('Username already taken!');
+
+      let newUser = User({username: name});
+      newUser.save((err, user) => {
+        if (err) return console.log(err);
+
+        res.json({
+          userId: user._id,
+          username: user.username
+        });
+      });
+    });
+  });
 
 const listener = app.listen(process.env.PORT || 3000, () => {
   console.log('Your app is listening on port ' + listener.address().port)
