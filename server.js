@@ -13,10 +13,10 @@ let userSchema = new Schema({
   username: String
 });
 let exerciseSchema = new Schema({
-  children: [userSchema],
+  user_id: String,
   description: String,
   duration: Number,
-  data: Date
+  date: Date
 });
 
 let User = mongoose.model('User', userSchema);
@@ -62,7 +62,7 @@ app.use((err, req, res, next) => {
 app.route('/api/exercise/new-user')
   .post((req, res) => {
     let name = req.body.username
-    let findUsername = User.findOne({username: name}, (err, user) => {
+    User.findOne({username: name}, (err, user) => {
       if (user) return res.send('Username already taken!');
 
       let newUser = User({username: name});
@@ -75,6 +75,49 @@ app.route('/api/exercise/new-user')
         });
       });
     });
+  });
+
+app.route('/api/exercise/add')
+  .post((req, res) => {
+    let id = req.body.userId;
+    let desc = req.body.description;
+    let duration = req.body.duration;
+    let date = req.body.date === '' ? new Date() : new Date(req.body.date);
+    
+    User.findOne({_id: id}, (err, user) => {
+      if (user) {
+        let newExercise = Exercise({
+          user_id: user._id,
+          description: desc,
+          duration: duration,
+          date: date
+        });
+
+        newExercise.markModified(date);
+        newExercise.save((err, exercise) => {
+          if (err) return console.log(err);
+          res.json({
+            user_id: user._id,
+            username: user.username,
+            description: exercise.description,
+            duration: exercise.duration,
+            date: exercise.date.toDateString()
+          });
+        });
+      }  else {
+        return res.send('This user does not exist.');
+      }
+    });
+  });
+
+app.route('/api/exercise/users')
+  .get((req, res) => {
+
+  });
+
+app.route('/api/exercise/log')
+  .get((req, res) => {
+
   });
 
 const listener = app.listen(process.env.PORT || 3000, () => {
