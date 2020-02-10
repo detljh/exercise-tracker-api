@@ -12,7 +12,8 @@
 		"express": "^4.14.0",
 		"mongodb": "^3.5.2",
 		"mongoose": "^5.7.5",
-		"shortid": "^2.2.6"
+		"shortid": "^2.2.6",
+		"dotenv": "^8.2.0"
 	},
 	"engines": {
 		"node": "6.9.1"
@@ -24,7 +25,6 @@
 		"express"
 	],
 	"devDependencies": {
-		"dotenv": "^8.2.0",
 		"nodemon": "^2.0.2"
 	}
 }
