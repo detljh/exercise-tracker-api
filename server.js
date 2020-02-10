@@ -145,11 +145,10 @@ app.route('/api/exercise/log')
                 date: log.date.toDateString()
               };
             });
-            res.json({
-              ...user.toObject(),
+            res.json(Object.assign({}, user.toObject(), {
               count: logs.length,
               log: logs
-            });
+            }));
           }
         });
       } else {
